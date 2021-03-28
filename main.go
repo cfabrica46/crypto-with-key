@@ -3,9 +3,9 @@ package main
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"encoding/hex"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 )
@@ -18,9 +18,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	textoOrigen := []byte("holaaa :v")
+	dataOrigen, err := getData()
 
-	textoEncriptadoString, err := encriptar(key, textoOrigen)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	dataEncriptada, err := encriptar(key, dataOrigen)
 
 	if err != nil {
 		log.Fatal(err)
@@ -28,9 +32,13 @@ func main() {
 
 	fmt.Println("Encriptando")
 
-	fmt.Printf("%s -> %s\n", textoOrigen, textoEncriptadoString)
+	err = crearArchivo("encriptado.jpg", dataEncriptada)
 
-	textoDesencriptado, err := desencriptar(key, textoEncriptadoString)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	dataDesencriptada, err := desencriptar(key, dataEncriptada)
 
 	if err != nil {
 		log.Fatal(err)
@@ -39,11 +47,14 @@ func main() {
 
 	fmt.Println("Desencriptando")
 
-	fmt.Printf("%s -> %s\n", textoEncriptadoString, textoDesencriptado)
+	err = crearArchivo("desencriptado.jpg", dataDesencriptada)
 
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
-func encriptar(key, textoAEnviar []byte) (textoEncriptadoString string, err error) {
+func encriptar(key, dataOrigen []byte) (dataEncriptada []byte, err error) {
 
 	block, err := aes.NewCipher(key)
 
@@ -59,19 +70,12 @@ func encriptar(key, textoAEnviar []byte) (textoEncriptadoString string, err erro
 
 	nonce := make([]byte, aesGCM.NonceSize())
 
-	textoCifrado := aesGCM.Seal(nonce, nonce, textoAEnviar, nil)
+	dataEncriptada = aesGCM.Seal(nonce, nonce, dataOrigen, nil)
 
-	textoEncriptadoString = fmt.Sprintf("%x", textoCifrado)
 	return
 }
 
-func desencriptar(key []byte, textoEncriptado string) (textoDesencriptado string, err error) {
-
-	enc, err := hex.DecodeString(textoEncriptado)
-
-	if err != nil {
-		return
-	}
+func desencriptar(key, dataEncriptada []byte) (dataDesencriptada []byte, err error) {
 
 	block, err := aes.NewCipher(key)
 
@@ -87,15 +91,13 @@ func desencriptar(key []byte, textoEncriptado string) (textoDesencriptado string
 
 	nonceSize := aesGCM.NonceSize()
 
-	nonce, cipherText := enc[:nonceSize], enc[nonceSize:]
+	nonce, cipherText := dataEncriptada[:nonceSize], dataEncriptada[nonceSize:]
 
-	textoDesencriptadoBytes, err := aesGCM.Open(nil, nonce, cipherText, nil)
+	dataDesencriptada, err = aesGCM.Open(nil, nonce, cipherText, nil)
 
 	if err != nil {
 		return
 	}
-
-	textoDesencriptado = fmt.Sprintf("%s", textoDesencriptadoBytes)
 
 	return
 }
@@ -110,13 +112,37 @@ func getKey() (key []byte, err error) {
 
 	defer f.Close()
 
-	dataKey, err := io.ReadAll(f)
+	key, err = io.ReadAll(f)
 
 	if err != nil {
 		return
 	}
 
-	key, err = hex.DecodeString(string(dataKey))
+	return
+}
+
+func getData() (data []byte, err error) {
+
+	data, err = ioutil.ReadFile("image.jpg")
+
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func crearArchivo(name string, data []byte) (err error) {
+
+	f, err := os.Create(name)
+
+	if err != nil {
+		return
+	}
+
+	defer f.Close()
+
+	_, err = f.Write(data)
 
 	if err != nil {
 		return
