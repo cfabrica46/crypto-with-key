@@ -18,9 +18,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	textoAEnviar := []byte("holaaa :v")
+	textoOrigen := []byte("holaaa :v")
 
-	textoEncriptadoString, err := encriptar(key, textoAEnviar)
+	textoEncriptadoString, err := encriptar(key, textoOrigen)
 
 	if err != nil {
 		log.Fatal(err)
@@ -28,7 +28,7 @@ func main() {
 
 	fmt.Println("Encriptando")
 
-	fmt.Printf("%s -> %s\n", textoAEnviar, textoEncriptadoString)
+	fmt.Printf("%s -> %s\n", textoOrigen, textoEncriptadoString)
 
 	textoDesencriptado, err := desencriptar(key, textoEncriptadoString)
 
