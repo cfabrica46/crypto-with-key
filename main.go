@@ -4,26 +4,16 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
-	"os"
 )
 
 func main() {
 
-	fkey, err := os.Open("key.txt")
+	key, err := ioutil.ReadFile("key.txt")
 
 	if err != nil {
-		return
-	}
-
-	defer fkey.Close()
-
-	key, err := io.ReadAll(fkey)
-
-	if err != nil {
-		return
+		log.Fatal(err)
 	}
 
 	dataOrigen, err := ioutil.ReadFile("image.jpg")
@@ -40,15 +30,7 @@ func main() {
 
 	fmt.Println("Encriptando")
 
-	f1, err := os.Create("encriptado.jpg")
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer f1.Close()
-
-	_, err = f1.Write(dataEncriptada)
+	err = ioutil.WriteFile("encriptado.jpg", dataEncriptada, 0644)
 
 	if err != nil {
 		log.Fatal(err)
@@ -63,15 +45,7 @@ func main() {
 
 	fmt.Println("Desencriptando")
 
-	f2, err := os.Create("desencriptado.jpg")
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer f2.Close()
-
-	_, err = f2.Write(dataDesencriptada)
+	err = ioutil.WriteFile("desencriptado.jpg", dataDesencriptada, 0644)
 
 	if err != nil {
 		log.Fatal(err)
