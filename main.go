@@ -12,10 +12,18 @@ import (
 
 func main() {
 
-	key, err := getKey()
+	fkey, err := os.Open("key.txt")
 
 	if err != nil {
-		log.Fatal(err)
+		return
+	}
+
+	defer fkey.Close()
+
+	key, err := io.ReadAll(fkey)
+
+	if err != nil {
+		return
 	}
 
 	dataOrigen, err := ioutil.ReadFile("image.jpg")
@@ -110,25 +118,6 @@ func desencriptar(key, dataEncriptada []byte) (dataDesencriptada []byte, err err
 	nonce, cipherText := dataEncriptada[:nonceSize], dataEncriptada[nonceSize:]
 
 	dataDesencriptada, err = aesGCM.Open(nil, nonce, cipherText, nil)
-
-	if err != nil {
-		return
-	}
-
-	return
-}
-
-func getKey() (key []byte, err error) {
-
-	f, err := os.Open("key.txt")
-
-	if err != nil {
-		return
-	}
-
-	defer f.Close()
-
-	key, err = io.ReadAll(f)
 
 	if err != nil {
 		return
