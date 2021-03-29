@@ -18,7 +18,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	dataOrigen, err := getData()
+	dataOrigen, err := ioutil.ReadFile("image.jpg")
 
 	if err != nil {
 		log.Fatal(err)
@@ -32,7 +32,15 @@ func main() {
 
 	fmt.Println("Encriptando")
 
-	err = crearArchivo("encriptado.jpg", dataEncriptada)
+	f1, err := os.Create("encriptado.jpg")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer f1.Close()
+
+	_, err = f1.Write(dataEncriptada)
 
 	if err != nil {
 		log.Fatal(err)
@@ -47,7 +55,15 @@ func main() {
 
 	fmt.Println("Desencriptando")
 
-	err = crearArchivo("desencriptado.jpg", dataDesencriptada)
+	f2, err := os.Create("desencriptado.jpg")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer f2.Close()
+
+	_, err = f2.Write(dataDesencriptada)
 
 	if err != nil {
 		log.Fatal(err)
@@ -113,36 +129,6 @@ func getKey() (key []byte, err error) {
 	defer f.Close()
 
 	key, err = io.ReadAll(f)
-
-	if err != nil {
-		return
-	}
-
-	return
-}
-
-func getData() (data []byte, err error) {
-
-	data, err = ioutil.ReadFile("image.jpg")
-
-	if err != nil {
-		return
-	}
-
-	return
-}
-
-func crearArchivo(name string, data []byte) (err error) {
-
-	f, err := os.Create(name)
-
-	if err != nil {
-		return
-	}
-
-	defer f.Close()
-
-	_, err = f.Write(data)
 
 	if err != nil {
 		return
